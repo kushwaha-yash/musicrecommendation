@@ -1,6 +1,5 @@
 # ============================================
-# FINAL MUSIC RECOMMENDER BACKEND (DEPLOY SAFE)
-# DATASET (PCA + MOOD) + SPOTIFY + AUTH + DB
+# FINAL MUSIC RECOMMENDER BACKEND (RAILWAY SAFE)
 # ============================================
 
 import os, re, ast, time
@@ -14,6 +13,7 @@ from flask_cors import CORS
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 # ============================================
 # INIT
@@ -26,22 +26,29 @@ CORS(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ============================================
-# DATABASE (SAFE FOR DEPLOY)
+# DATABASE (RAILWAY MYSQL_URL)
 # ============================================
 def get_db_connection():
     try:
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            raise Exception("DATABASE_URL not set")
+
+        parsed = urlparse(db_url)
+
         return mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASS"),
-            database=os.getenv("DB_NAME")
+            host=parsed.hostname,
+            port=parsed.port,
+            user=parsed.username,
+            password=parsed.password,
+            database=parsed.path.lstrip("/")
         )
     except Exception as e:
         print("⚠ DB connection failed:", e)
         return None
 
 # ============================================
-# LOAD DATASET + PCA (ABSOLUTE PATH FIX)
+# LOAD DATASET
 # ============================================
 df2   = joblib.load(os.path.join(BASE_DIR, "songs_df.pkl"))
 X_emb = joblib.load(os.path.join(BASE_DIR, "xemb.pkl"))
@@ -117,7 +124,6 @@ def dataset_recommend(query, top_n=6):
         return [{
             "name": df2.at[i,"name"],
             "artists": df2.at[i,"artists"],
-            "source": "dataset",
             "reason": f"Mood: {mood}"
         } for i in idx]
 
@@ -133,7 +139,6 @@ def dataset_recommend(query, top_n=6):
     return [{
         "name": df2.at[i,"name"],
         "artists": df2.at[i,"artists"],
-        "source": "dataset",
         "reason": f"Similar to {query}"
     } for i in idx]
 
@@ -178,7 +183,7 @@ def spotify_search(q, limit=6):
         "artists": ", ".join(a["name"] for a in it["artists"]),
         "image": it["album"]["images"][0]["url"] if it["album"]["images"] else None,
         "preview_url": it["preview_url"],
-        "source": "spotify"
+        "reason": "Spotify"
     } for it in items]
 
 # ============================================
@@ -190,7 +195,7 @@ def home():
 
 @app.route("/signup", methods=["POST"])
 def signup():
-    data = request.get_json(silent=True)
+    data = request.get_json()
     db = get_db_connection()
     if not db:
         return jsonify({"error": "DB unavailable"}), 503
@@ -212,7 +217,7 @@ def signup():
 
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.get_json(silent=True)
+    data = request.get_json()
     db = get_db_connection()
     if not db:
         return jsonify({"error": "DB unavailable"}), 503
@@ -231,7 +236,7 @@ def login():
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
-    data = request.get_json(silent=True)
+    data = request.get_json()
     q = data["query"]
     user_id = data.get("user_id")
 
@@ -252,7 +257,7 @@ def recommend():
 
 @app.route("/rate_song", methods=["POST"])
 def rate_song():
-    data = request.get_json(silent=True)
+    data = request.get_json()
     db = get_db_connection()
     if not db:
         return jsonify({"error": "DB unavailable"}), 503

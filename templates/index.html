@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Music Recommendation Website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+</head>
+
+<body>
+
+  <!-- Background FX -->
+  <div class="bg-blur bg-blur-1"></div>
+  <div class="bg-blur bg-blur-2"></div>
+  <div class="bg-blur bg-blur-3"></div>
+
+  <div class="floating-notes" id="floatingNotes"></div>
+
+  <!-- NAVBAR -->
+  <header class="top-nav">
+    <div class="logo">
+      <div class="logo-icon">♪</div>
+      <span class="logo-text">Music<span>Recommender</span></span>
+    </div>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#hero">Home</a>
+      <a href="#discover">Discover</a>
+      <a href="#genres">Genres</a>
+      <a href="#trending">Trending</a>
+    </nav>
+
+    <div class="auth-actions">
+      <!-- BEFORE LOGIN -->
+      <button id="loginBtn" class="btn ghost" data-auth="login">Log In</button>
+      <button id="signupBtn" class="btn primary" data-auth="signup">Sign Up</button>
+
+      <!-- AFTER LOGIN -->
+      <div id="userBox" class="user-box hidden">
+        <span id="navUserName" class="user-name"></span>
+        <button id="logoutBtn" class="btn ghost logout-btn">Logout</button>
+      </div>
+
+      <!-- MOBILE MENU -->
+      <button class="hamburger" id="hamburgerBtn">
+        <span></span><span></span><span></span>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <main>
+    <section id="hero" class="hero">
+      <div class="hero-content">
+
+        <h1>Find the right track for every mood</h1>
+        <p class="hero-subtitle">Your personal AI-powered music discovery zone 🎵</p>
+
+        <div class="hero-search">
+          <input type="text" placeholder="Search by song, artist, or mood…" />
+          <button class="btn primary">Get Recommendations</button>
+        </div>
+
+        <!-- MOOD TAGS -->
+        <div class="hero-tags">
+          <span class="tag" data-mood="happy">Happy</span>
+          <span class="tag" data-mood="sad">Sad</span>
+          <span class="tag" data-mood="energetic">Energetic</span>
+          <span class="tag" data-mood="calm">Calm</span>
+          <span class="tag" data-mood="dance">Dance</span>
+        </div>
+
+        <div class="hero-metrics">
+          <div>
+            <h3>50K+</h3><p>Active listeners</p>
+          </div>
+          <div>
+            <h3>1M+</h3><p>Recommendations served</p>
+          </div>
+          <div>
+            <h3>92%</h3><p>User satisfaction</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =============== PLAYER SIDE CARD =============== -->
+      <div class="hero-player-card">
+
+        <div class="player-header">
+          <span>Now Playing</span>
+          <span class="status-dot"></span>
+        </div>
+
+        <div class="current-track">
+          <img class="cover" id="playerCover" src="" alt="Cover" />
+          <div class="meta">
+            <h3 id="playerTitle">Select a track</h3>
+            <p id="playerArtist">---</p>
+          </div>
+        </div>
+
+        <div class="progress-wrapper">
+          <div class="time" id="currentTime">0:00</div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <div class="time" id="totalTime">0:30</div>
+        </div>
+
+        <div class="player-controls">
+          <button class="ctrl small" id="btnRestart">⟲</button>
+          <button class="ctrl" id="btnPrev">⏮</button>
+          <button class="ctrl primary" id="btnPlay">▶</button>
+          <button class="ctrl" id="btnNext">⏭</button>
+          <button class="ctrl small">🔁</button>
+        </div>
+
+        <!-- ⭐ RATING SYSTEM -->
+        <div class="rating-box" id="ratingBox">
+          <span class="star" data-v="1">★</span>
+          <span class="star" data-v="2">★</span>
+          <span class="star" data-v="3">★</span>
+          <span class="star" data-v="4">★</span>
+          <span class="star" data-v="5">★</span>
+        </div>
+
+        <div class="queue-header">
+          <span>Up Next</span>
+          <button class="queue-filter">For you ▾</button>
+        </div>
+
+        <div class="queue-list" id="queueList"></div>
+
+      </div>
+    </section>
+
+    <!-- DISCOVER SECTION -->
+    <section id="discover" class="discover">
+      <div class="section-header">
+        <h2>Discover by mood</h2>
+        <p>Tell us how you feel, we’ll handle the playlist.</p>
+      </div>
+
+      <div class="card-grid">
+        <article class="mood-card" id="mood-chill"><h3>Chill & Focus</h3><p>Relaxing beats.</p></article>
+        <article class="mood-card" id="mood-happy"><h3>Happy Vibes</h3><p>Bright & joyful.</p></article>
+        <article class="mood-card" id="mood-gym"><h3>Gym & Pump</h3><p>High energy.</p></article>
+        <article class="mood-card" id="mood-night"><h3>Late Night</h3><p>Calm & dreamy.</p></article>
+      </div>
+    </section>
+
+    <!-- GENRES -->
+    <section id="genres" class="genres">
+      <div class="section-header">
+        <h2>Top genres this week</h2>
+        <p>What people are listening to around you.</p>
+      </div>
+
+      <div class="genre-chips">
+        <button class="chip active">Lo-fi</button>
+        <button class="chip">Bollywood</button>
+        <button class="chip">EDM</button>
+        <button class="chip">Hip-hop</button>
+        <button class="chip">Indie</button>
+        <button class="chip">Instrumental</button>
+      </div>
+
+      <div class="genre-layout">
+        <div class="genre-highlight">
+          <h3>Lo-fi Beats</h3>
+          <p>Perfect for coding, studying, or focus time.</p>
+          <ul class="stat-list">
+            <li><span>Popular in:</span> Mumbai, Pune, Bengaluru</li>
+            <li><span>Peak hours:</span> 10 PM – 2 AM</li>
+            <li><span>Avg. session:</span> 47 mins</li>
+          </ul>
+          <button class="btn primary small">Start radio</button>
+        </div>
+
+        <div class="genre-playlist">
+          <div class="playlist-item"><span class="index">01</span><div class="info"><p class="title">Bytecode Dreams</p><p class="artist">Binary Bloom</p></div><button class="mini-play">▶</button></div>
+          <div class="playlist-item"><span class="index">02</span><div class="info"><p class="title">Coffee & Code</p><p class="artist">Debug Loops</p></div><button class="mini-play">▶</button></div>
+          <div class="playlist-item"><span class="index">03</span><div class="info"><p class="title">Syntax Sky</p><p class="artist">Cloud Compiler</p></div><button class="mini-play">▶</button></div>
+          <div class="playlist-item"><span class="index">04</span><div class="info"><p class="title">Silent Errors</p><p class="artist">Stack Trace</p></div><button class="mini-play">▶</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRENDING -->
+    <section id="trending" class="trending">
+      <div class="section-header">
+        <h2>Trending for you</h2>
+        <p>Based on your taste and history.</p>
+      </div>
+
+      <div class="trending-grid">
+        <article class="track-card"><div class="track-cover"></div><div class="track-meta"><h3>Neon Nights</h3><p>Skyline Echo</p></div><button class="btn ghost small">Play</button></article>
+        <article class="track-card"><div class="track-cover"></div><div class="track-meta"><h3>Rainy Windows</h3><p>Soft Static</p></div><button class="btn ghost small">Play</button></article>
+        <article class="track-card"><div class="track-cover"></div><div class="track-meta"><h3>Glow Up</h3><p>Beat Street</p></div><button class="btn ghost small">Play</button></article>
+        <article class="track-card"><div class="track-cover"></div><div class="track-meta"><h3>Sky Above</h3><p>Cloud Chasers</p></div><button class="btn ghost small">Play</button></article>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 Music Recommender · Built for your vibes 🎧</p>
+  </footer>
+
+  <!-- AUTH MODAL -->
+  <div class="auth-modal hidden" id="authModal">
+    <div class="auth-backdrop" id="authBackdrop"></div>
+
+    <div class="auth-dialog">
+      <button class="auth-close" id="authCloseBtn">×</button>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Log In</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+
+      <div class="auth-body">
+
+        <!-- LOGIN -->
+        <form class="auth-form" id="loginForm">
+          <h2>Welcome back 👋</h2>
+          <label>Email<input type="email" name="email" required /></label>
+          <label>Password<input type="password" name="password" required /></label>
+          <button type="submit" class="btn primary full">Continue</button>
+        </form>
+
+        <!-- SIGNUP -->
+        <form class="auth-form hidden" id="signupForm">
+          <h2>Create your account ✨</h2>
+          <label>Full name<input type="text" name="name" required /></label>
+          <label>Email<input type="email" name="email" required /></label>
+          <label>Password<input type="password" name="password" required /></label>
+          <button type="submit" class="btn primary full">Sign up</button>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
